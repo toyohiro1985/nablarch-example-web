@@ -2,6 +2,7 @@ package com.nablarch.example.app.web.form;
 
 import java.io.Serializable;
 
+import nablarch.core.validation.ee.Domain;
 import nablarch.core.validation.ee.Required;
 
 /**
@@ -16,6 +17,7 @@ public class ProjectTargetForm implements Serializable {
 
     /** プロジェクトID */
     @Required
+    @Domain("id")
     private String projectId;
 
     /**

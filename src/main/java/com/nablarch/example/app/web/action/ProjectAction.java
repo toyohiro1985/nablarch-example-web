@@ -1,5 +1,8 @@
 package com.nablarch.example.app.web.action;
 
+import java.nio.file.Path;
+import java.util.List;
+
 import com.nablarch.example.app.entity.Client;
 import com.nablarch.example.app.entity.Project;
 import com.nablarch.example.app.web.common.authentication.context.LoginUserPrincipal;
@@ -29,9 +32,6 @@ import nablarch.fw.ExecutionContext;
 import nablarch.fw.web.HttpRequest;
 import nablarch.fw.web.HttpResponse;
 import nablarch.fw.web.interceptor.OnError;
-
-import java.nio.file.Path;
-import java.util.List;
 
 /**
  * プロジェクト検索、登録、更新、削除機能 。
@@ -286,6 +286,7 @@ public class ProjectAction {
         ProjectTargetForm targetForm = context.getRequestScopedVar("form");
         LoginUserPrincipal userContext = SessionUtil.get(context, "userContext");
 
+        // 他のユーザによって対象プロジェクトが削除されている場合NoDataExceptionを送出
         ProjectDto dto = UniversalDao.findBySqlFile(ProjectDto.class, "FIND_BY_PROJECT",
                 new Object[] {targetForm.getProjectId(), userContext.getUserId()});
 
@@ -309,6 +310,7 @@ public class ProjectAction {
     public HttpResponse confirmOfUpdate(HttpRequest request, ExecutionContext context) {
         ProjectUpdateForm form = context.getRequestScopedVar("form");
 
+        // データベースを検索して入力されたIDを持つ顧客が存在するか確認する
         if (form.hasClientId()) {
             if (!UniversalDao.exists(Client.class, "FIND_BY_CLIENT_ID",
                     new Object[] {Integer.parseInt(form.getClientId())})) {
@@ -320,6 +322,8 @@ public class ProjectAction {
         }
 
         Project project = SessionUtil.get(context, "project");
+
+        // フォームの値をセッションへ上書きする
         BeanUtil.copy(form, project);
 
         // 出力情報をリクエストスコープにセット
@@ -395,6 +399,8 @@ public class ProjectAction {
      */
     @OnDoubleSubmission
     public HttpResponse delete(HttpRequest request, ExecutionContext context) {
+
+    	// 更新画面を表示する際にセッションにプロジェクト情報を格納している
         final Project project = SessionUtil.delete(context, "project");
         UniversalDao.delete(project);
 
